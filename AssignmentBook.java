@@ -2,48 +2,48 @@ public class AssignmentBook
 {
     //Schedules are formatted so that rows will be periods, columns will be intervals of minutes available
     //Assume that each interval of minutes cycles from "available" and "not available", with the first interval being "not available"
-    private int[][] schedule;
-    private int sumOfMin = 0;
+    private boolean[][] schedule;
 
-    public AssignmentBook(int[][] userSchedule){
-        schedule = userSchedule;
+    public AssignmentBook(boolean[][] schedule){
+        this.schedule = schedule;
     }
 
-    public String toString(){
-        String s = "";
-        for (int row=0; row < schedule.length; row++){
-            for (int col=0; col < schedule.length; col++){
-                s += schedule[row][col] + " ";
-            }
-            s += "\n";
-        }
-        return s;
+    public void printPeriod(int period){
+        for(int i=0; i < schedule[period - 1].length; i++) System.out.println(i + " " + schedule[period - 1][i]);
     }
 
     private boolean isMinuteFree(int period, int minute){
-        // for(int i=0; i<schedule[period].length; i++){
-        //     sumOfMin += schedule[period][i];
-        // }
-        if(minute < schedule[period][0]){
-            return false;
+        return schedule[period-1][minute];
+    }
+
+    private void reserveBlock(int period, int startMinute, int duration){
+        for (int i=startMinute; i < startMinute+duration; i++){
+            schedule[period-1][i] = false;
         }
-        for(int i=0; i<schedule[period].length-1; i++){
-            sumOfMin += schedule[period][i];
-            // System.out.println(sumOfMin);
-            // System.out.println(schedule[period][1]);
-            if((i % 2 == 0) && (minute > sumOfMin) && (minute < (sumOfMin + schedule[period][i]))){
-                return true;
+    }
+
+    public int findFreeBlock(int period, int duration){
+        int block = 0;
+        for (int i=0; i < 60; i++){
+            if(isMinuteFree(period, i)){
+                block++;
+                if(block == duration){
+                    return i - duration + 1;
+                }
             }
-            if((i % 2 == 1) && (minute > sumOfMin) && (minute < (sumOfMin + schedule[period][i]))){
-                return false;
+            else block = 0;
+        }
+        return -1;
+    }
+
+    public boolean makeAppointment(int startPeriod, int endPeriod, int duration){
+        for(int i=startPeriod; i <= endPeriod; i++){
+            int freeBlock = findFreeBlock(i, duration);
+            if(freeBlock > -1){
+                reserveBlock(i, freeBlock, duration);
+                return true;
             }
         }
         return false;
-    }
-
-
-
-    public void testIsMinFree(int period, int minute){
-        System.out.println(isMinuteFree(period, minute));
     }
 }
